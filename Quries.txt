@@ -1,0 +1,274 @@
+Requirements: Create a database named ecommerce.
+Query: CREATE DATABASE ecommerce;
+
+Query OK, 1 row affected (0.02 sec)
+
+Requirements: Create three tables: customers, orders, and products.
+Query: 
+
+1)Table Customers:
+CREATE TABLE customers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    address VARCHAR(255)
+);
+
+Query OK, 0 rows affected (0.07 sec)
+
+2)Table Products:
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    price DECIMAL(10,2),
+    description TEXT
+);
+
+Query OK, 0 rows affected (0.04 sec)
+
+3)Table Orders:
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    total_amount DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+Query OK, 0 rows affected (0.09 sec)
+
+Requirements: Insert some sample data into the tables.
+Query:
+
+1)Table Customers:
+ INSERT INTO customers (name, email, address) VALUES 
+    ('Jawahar', 'jawahar@gmail.com', '1/23 Namakkal'),
+    ('Yogesh', 'yogesh@gmail.com', '2/34 Chennai'),
+    ('Praddep','pradeep@gmail.com','3/45 London'),
+    ('Kowsi', 'kowsi@gmail.com', '4/56 RSM');
+
++----+---------+-------------------+---------------+
+| id | name    | email             | address       |
++----+---------+-------------------+---------------+
+|  1 | Jawahar | jawahar@gmail.com | 1/23 Namakkal |
+|  2 | Yogesh  | yogesh@gmail.com  | 2/34 Chennai  |
+|  3 | Praddep | pradeep@gmail.com | 3/45 London   |
+|  4 | Kowsi   | kowsi@gmail.com   | 4/56 RSM      |
++----+---------+-------------------+---------------+
+
+2)Table Products:
+INSERT INTO products (name, price, description) VALUES
+    ('Product 1', 50.00, 'Product 1 Description'),
+    ('Product 2', 45.00, 'Product 2 Description'),
+    ('Product 3', 100.00, 'Product 3 Description'),
+    ('Product 4', 150.00, 'Product 4 Description'),
+    ('Product 5', 10.00, 'Product 5 Description');
+
++----+-----------+--------+-----------------------+
+| id | name      | price  | description           |
++----+-----------+--------+-----------------------+
+|  1 | Product 1 |  50.00 | Product 1 Description |
+|  2 | Product 2 |  45.00 | Product 2 Description |
+|  3 | Product 3 | 100.00 | Product 3 Description |
+|  4 | Product 4 | 150.00 | Product 4 Description |
+|  5 | Product 5 |  10.00 | Product 5 Description |
++----+-----------+--------+-----------------------+
+
+3)Table Orders
+ INSERT INTO orders (customer_id, order_date, total_amount) VALUES
+    (1, CURDATE(), 100.00),
+    (2, CURDATE() - INTERVAL 15 DAY, 300.00),
+    (1, CURDATE() - INTERVAL 25 DAY, 200.00),
+    (3, CURDATE() - INTERVAL 5 DAY, 150.00),
+    (4, CURDATE() - INTERVAL 35 DAY, 450.00),
+    (2, CURDATE() - INTERVAL 18 DAY, 250.00),
+    (3, CURDATE() - INTERVAL 30 DAY, 80.00);
+
++----+-------------+------------+--------------+
+| id | customer_id | order_date | total_amount |
++----+-------------+------------+--------------+
+|  1 |           1 | 2025-05-13 |       100.00 |
+|  2 |           2 | 2025-04-28 |       300.00 |
+|  3 |           1 | 2025-04-18 |       200.00 |
+|  4 |           3 | 2025-05-08 |       150.00 |
+|  5 |           4 | 2025-04-08 |       450.00 |
+|  6 |           2 | 2025-04-25 |       250.00 |
+|  7 |           3 | 2025-04-13 |        80.00 |
++----+-------------+------------+--------------+
+
+Questions:
+
+1)Retrieve all customers who have placed an order in the last 30 days.
+Query:
+ SELECT DISTINCT c.*
+    FROM customers c
+    JOIN orders o ON c.id = o.customer_id
+    WHERE o.order_date >= CURDATE() - INTERVAL 30 DAY;
+
++----+---------+-------------------+---------------+
+| id | name    | email             | address       |
++----+---------+-------------------+---------------+
+|  1 | Jawahar | jawahar@gmail.com | 1/23 Namakkal |
+|  2 | Yogesh  | yogesh@gmail.com  | 2/34 Chennai  |
+|  3 | Praddep | pradeep@gmail.com | 3/45 London   |
++----+---------+-------------------+---------------+
+
+2)Get the total amount of all orders placed by each customer.
+Query:
+SELECT c.name, SUM(o.total_amount) AS total_spent
+    FROM customers c
+    JOIN orders o ON c.id = o.customer_id
+    GROUP BY c.id;
+
++---------+-------------+
+| name    | total_spent |
++---------+-------------+
+| Jawahar |      300.00 |
+| Yogesh  |      550.00 |
+| Praddep |      230.00 |
+| Kowsi   |      450.00 |
++---------+-------------+
+
+3)Update the price of Product C to 45.00.
+Query:
+UPDATE products
+    SET price = 45.00
+    WHERE name = 'Product 3';
+
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
++----+-----------+--------+-----------------------+
+| id | name      | price  | description           |
++----+-----------+--------+-----------------------+
+|  1 | Product 1 |  50.00 | Product 1 Description |
+|  2 | Product 2 |  45.00 | Product 2 Description |
+|  3 | Product 3 |  45.00 | Product 3 Description |
+|  4 | Product 4 | 150.00 | Product 4 Description |
+|  5 | Product 5 |  10.00 | Product 5 Description |
++----+-----------+--------+-----------------------+
+
+
+4)Add a new column discount to the products table.
+Query:
+ALTER TABLE products
+    ADD discount DECIMAL(5,2) DEFAULT 0.00;
+
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
++----+-----------+--------+-----------------------+----------+
+| id | name      | price  | description           | discount |
++----+-----------+--------+-----------------------+----------+
+|  1 | Product 1 |  50.00 | Product 1 Description |     0.00 |
+|  2 | Product 2 |  45.00 | Product 2 Description |     0.00 |
+|  3 | Product 3 |  45.00 | Product 3 Description |     0.00 |
+|  4 | Product 4 | 150.00 | Product 4 Description |     0.00 |
+|  5 | Product 5 |  10.00 | Product 5 Description |     0.00 |
++----+-----------+--------+-----------------------+----------+
+
+5)Retrieve the top 3 products with the highest price.
+Query:
+ SELECT * FROM products
+    ORDER BY price DESC
+    LIMIT 3;
+
++----+-----------+--------+-----------------------+----------+
+| id | name      | price  | description           | discount |
++----+-----------+--------+-----------------------+----------+
+|  4 | Product 4 | 150.00 | Product 4 Description |     0.00 |
+|  1 | Product 1 |  50.00 | Product 1 Description |     0.00 |
+|  2 | Product 2 |  45.00 | Product 2 Description |     0.00 |
++----+-----------+--------+-----------------------+----------+
+
+6)Normalize the database by creating a separate table for order items and updating the orders table to reference the order_items table.
+Query:
+1)Create order_items table
+ CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    quantity INT,
+    price DECIMAL(10,2),
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+    );
+
+Query OK, 0 rows affected (0.09 sec)
+
+2)Insert sample data into order_items
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+    (1, 1, 1, 50.00),(1, 2, 1, 45.00),(2, 3, 3, 45.00),
+    (3, 4, 1, 150.00),(4, 1, 2, 50.00),(5, 5, 5, 10.00),
+    (6, 2, 2, 45.00);
+
++----+----------+------------+----------+--------+
+| id | order_id | product_id | quantity | price  |
++----+----------+------------+----------+--------+
+|  1 |        1 |          1 |        1 |  50.00 |
+|  2 |        1 |          2 |        1 |  45.00 |
+|  3 |        2 |          3 |        3 |  45.00 |
+|  4 |        3 |          4 |        1 | 150.00 |
+|  5 |        4 |          1 |        2 |  50.00 |
+|  6 |        5 |          5 |        5 |  10.00 |
+|  7 |        6 |          2 |        2 |  45.00 |
++----+----------+------------+----------+--------+
+
+7)Get the names of customers who have ordered Product A.
+Query:
+ SELECT DISTINCT c.name
+    FROM customers c
+    JOIN orders o ON c.id = o.customer_id
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN products p ON oi.product_id = p.id
+    WHERE p.name = 'Product 1';
+
++---------+
+| name    |
++---------+
+| Jawahar |
+| Praddep |
++---------+
+
+8)Join the orders and customers tables to retrieve the customer's name and order date for each order. 
+Query:
+ SELECT c.name AS customer_name, o.order_date
+    FROM orders o
+    JOIN customers c ON o.customer_id = c.id;
+
++---------------+------------+
+| customer_name | order_date |
++---------------+------------+
+| Jawahar       | 2025-05-13 |
+| Jawahar       | 2025-04-18 |
+| Yogesh        | 2025-04-28 |
+| Yogesh        | 2025-04-25 |
+| Praddep       | 2025-05-08 |
+| Praddep       | 2025-04-13 |
+| Kowsi         | 2025-04-08 |
++---------------+------------+
+
+9)Retrieve the orders with a total amount greater than 150.00.
+Query:
+ SELECT * FROM orders
+    WHERE total_amount > 150.00;
+
++----+-------------+------------+--------------+
+| id | customer_id | order_date | total_amount |
++----+-------------+------------+--------------+
+|  2 |           2 | 2025-04-28 |       300.00 |
+|  3 |           1 | 2025-04-18 |       200.00 |
+|  5 |           4 | 2025-04-08 |       450.00 |
+|  6 |           2 | 2025-04-25 |       250.00 |
++----+-------------+------------+--------------+
+
+10)Retrieve the average total of all orders.
+Query:
+ SELECT AVG(total_amount) AS average_order_total
+    FROM orders;
+
++---------------------+
+| average_order_total |
++---------------------+
+|          218.571429 |
++---------------------+
